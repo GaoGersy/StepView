@@ -41,6 +41,7 @@ public class StepView extends View {
     private int mBigTextSize;
     private int mSmallTextSize;
     private int mDotSize;
+    private int mColor;
 
     public StepView(Context context) {
         this(context, null);
@@ -53,6 +54,7 @@ public class StepView extends View {
         mBigTextSize = dip2px(context,50);
         mSmallTextSize = dip2px(context,15);
         mDotSize = dip2px(context,5);
+        mColor = Color.parseColor("#ffffff");
         //初始化线条画笔
         initPaint();
 
@@ -72,7 +74,7 @@ public class StepView extends View {
     private void initPaint() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.parseColor("#ffffff"));
+        mPaint.setColor(mColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setFilterBitmap(true);
@@ -82,13 +84,13 @@ public class StepView extends View {
     private void initDotPaint() {
         mDotPaint = new Paint();
         mDotPaint.setAntiAlias(true);
-        mDotPaint.setColor(Color.parseColor("#ffffff"));
+        mDotPaint.setColor(mColor);
     }
 
     private void initArcPaint() {
         mArcPaint = new Paint();
         mArcPaint.setAntiAlias(true);
-        mArcPaint.setColor(Color.parseColor("#ffffff"));
+        mArcPaint.setColor(mColor);
         mArcPaint.setStyle(Paint.Style.STROKE);
         mArcPaint.setStrokeWidth(mLineDistance + mStrokeWidth);
     }
@@ -116,7 +118,6 @@ public class StepView extends View {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec)/2;
         int measureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(width,height);
     }
 
@@ -202,6 +203,11 @@ public class StepView extends View {
         }
     }
 
+    private int dip2px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
     public void setProgress(int progress) {
         mProgress = progress;
         float precent = mProgress / (mMaxProgress + 0f);
@@ -215,8 +221,38 @@ public class StepView extends View {
         invalidate();
     }
 
-    public int dip2px(Context context, float dpValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
+    public void setLineDistance(int distance){
+        mLineDistance = distance;
+        invalidate();
+    }
+
+    public void setStrokeWidth(int strokeWidth){
+        mStrokeWidth = strokeWidth;
+        invalidate();
+    }
+
+    public void setBigTextSize(int size){
+        mBigTextSize = size;
+        initTextPaint();
+        invalidate();
+    }
+
+    public void setSmallTextSize(int size){
+        mSmallTextSize = size;
+        initBlackTextPaint();
+        invalidate();
+    }
+
+    public void setDotSize(int dotSize){
+        mDotSize = dotSize;
+        invalidate();
+    }
+
+    public void setColor(int color){
+        mColor = color;
+        initPaint();
+        initDotPaint();
+        initArcPaint();
+        invalidate();
     }
 }

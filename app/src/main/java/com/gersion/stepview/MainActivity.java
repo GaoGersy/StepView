@@ -1,5 +1,6 @@
 package com.gersion.stepview;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -23,11 +24,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         initEvent();
     }
 
-
     private void initView() {
         mSvStep = (StepView) findViewById(R.id.sv_step);
         mSvStep.setMaxProgress(6000);
         mSvStep.setProgress(13232);
+        mSvStep.setColor(Color.parseColor("#00ffff"));
+        mSvStep.setBigTextSize(90);
+        mSvStep.setDotSize(10);
+        mSvStep.setSmallTextSize(25);
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
         mEtMax = (EditText) findViewById(R.id.et_max);
     }
