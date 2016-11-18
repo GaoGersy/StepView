@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import java.text.DecimalFormat;
@@ -205,10 +206,13 @@ public class StepView extends View {
         mProgress = progress;
         float precent = mProgress / (mMaxProgress + 0f);
         mDegree = 360 * precent;
+        invalidate();
     }
 
     public void setMaxProgress(int max) {
         mMaxProgress = max;
+        setProgress(mProgress);
+        invalidate();
     }
 
     public int dip2px(Context context, float dpValue) {
