@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mSvStep.setMaxProgress(6000);
         mSvStep.setProgress(2000);
 //        mSvStep.setColor(Color.parseColor("#00ffff"));
-        mSvStep.setBigTextSize(150);
+        mSvStep.setBigTextSize(120);
         mSvStep.setDotSize(12);
         mSvStep.setSmallTextSize(40);
-        mSvStep.setLineDistance(40);
+        mSvStep.setLineDistance(30);
         mSvStep.setStrokeWidth(2);
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
         mEtMax = (EditText) findViewById(R.id.et_max);

@@ -6,16 +6,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="#38A6F0"
         tools:context="com.gersion.stepview.MainActivity"
         >
 
 
     <com.gersion.stepview.view.StepView
+            android:layout_gravity="center"
             android:background="#38A6F0"
             android:id="@+id/sv_step"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     <EditText
+            android:visibility="gone"
             android:text="6000"
             android:id="@+id/et_max"
             android:hint="设置目标步数，默认为6000"
@@ -23,13 +26,11 @@
             android:layout_height="wrap_content"
             />
     <SeekBar
+            android:visibility="gone"
             android:layout_marginTop="10dp"
             android:id="@+id/seekBar"
             android:max="20000"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             />
-    <com.gersion.stepview.view.SleepView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
 </LinearLayout>
