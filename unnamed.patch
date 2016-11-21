@@ -1,0 +1,572 @@
+Index: app/src/main/java/com/gersion/stepview/view/SleepView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/gersion/stepview/view/SleepView.java	(revision )
++++ app/src/main/java/com/gersion/stepview/view/SleepView.java	(revision )
+@@ -0,0 +1,55 @@
++package com.gersion.stepview.view;
++
++import android.content.Context;
++import android.graphics.Canvas;
++import android.graphics.Color;
++import android.graphics.Paint;
++import android.graphics.Rect;
++import android.graphics.RectF;
++import android.util.AttributeSet;
++import android.view.View;
++
++/**
++ * @作者 Gersy
++ * @版本
++ * @包名 com.gersion.stepview.view
++ * @待完成
++ * @创建时间 2016/11/18
++ * @功能描述 TODO
++ * @更新人 $
++ * @更新时间 $
++ * @更新版本 $
++ */
++public class SleepView extends View {
++
++    private Paint mPaint;
++
++    public SleepView(Context context) {
++        this(context,null);
++    }
++
++    public SleepView(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        mPaint = new Paint();
++        mPaint.setAntiAlias(true);
++        mPaint.setAlpha(90);
++        mPaint.setFilterBitmap(true);
++        mPaint.setColor(Color.WHITE);
++    }
++
++    @Override
++    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
++        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
++
++    }
++
++    @Override
++    protected void onDraw(Canvas canvas) {
++        RectF rect = new RectF();
++        rect.left = 100;
++        rect.right = 200;
++        rect.top = 100;
++        rect.bottom = 400;
++        canvas.drawRect(rect,mPaint);
++    }
++}
+Index: app/src/main/java/com/gersion/stepview/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/gersion/stepview/MainActivity.java	(revision 9bfff5044d767821ec40912c03d653f7a9c09566)
++++ app/src/main/java/com/gersion/stepview/MainActivity.java	(revision )
+@@ -2,10 +2,16 @@
+ 
+ import android.graphics.Color;
+ import android.os.Bundle;
++import android.os.Handler;
++import android.support.v7.app.ActionBar;
+ import android.support.v7.app.AppCompatActivity;
+ import android.text.Editable;
+ import android.text.TextWatcher;
++import android.util.Log;
++import android.view.ViewGroup;
+ import android.widget.EditText;
++import android.widget.LinearLayout;
++import android.widget.RelativeLayout;
+ import android.widget.SeekBar;
+ 
+ import com.gersion.stepview.view.StepView;
+@@ -15,6 +21,7 @@
+     private StepView mSvStep;
+     private SeekBar mSeekBar;
+     private EditText mEtMax;
++    private Handler mHandler = new Handler();
+ 
+     @Override
+     protected void onCreate(Bundle savedInstanceState) {
+@@ -27,11 +34,13 @@
+     private void initView() {
+         mSvStep = (StepView) findViewById(R.id.sv_step);
+         mSvStep.setMaxProgress(6000);
+-        mSvStep.setProgress(13232);
+-        mSvStep.setColor(Color.parseColor("#00ffff"));
+-        mSvStep.setBigTextSize(90);
+-        mSvStep.setDotSize(10);
+-        mSvStep.setSmallTextSize(25);
++        mSvStep.setProgress(2000);
++//        mSvStep.setColor(Color.parseColor("#00ffff"));
++        mSvStep.setBigTextSize(150);
++        mSvStep.setDotSize(12);
++        mSvStep.setSmallTextSize(40);
++        mSvStep.setLineDistance(40);
++        mSvStep.setStrokeWidth(2);
+         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+         mEtMax = (EditText) findViewById(R.id.et_max);
+     }
+@@ -39,6 +48,24 @@
+     private void initEvent() {
+         mSeekBar.setOnSeekBarChangeListener(this);
+         mEtMax.addTextChangedListener(this);
++
++        new Thread(new Runnable() {
++            @Override
++            public void run() {
++                try {
++                    Thread.sleep(3000);
++                } catch (InterruptedException e) {
++                    e.printStackTrace();
++                }
++                mHandler.post(new Runnable() {
++                    @Override
++                    public void run() {
++                        mSvStep.stopAnimator(5500);
++
++                    }
++                });
++            }
++        }).start();
+     }
+ 
+     @Override
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_main.xml	(revision 9bfff5044d767821ec40912c03d653f7a9c09566)
++++ app/src/main/res/layout/activity_main.xml	(revision )
+@@ -5,10 +5,6 @@
+         android:id="@+id/activity_main"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+-        android:paddingLeft="@dimen/activity_horizontal_margin"
+-        android:paddingRight="@dimen/activity_horizontal_margin"
+-        android:paddingTop="@dimen/activity_vertical_margin"
+-        android:paddingBottom="@dimen/activity_vertical_margin"
+         android:orientation="vertical"
+         tools:context="com.gersion.stepview.MainActivity"
+         >
+@@ -20,6 +16,7 @@
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"/>
+     <EditText
++            android:text="6000"
+             android:id="@+id/et_max"
+             android:hint="设置目标步数，默认为6000"
+             android:layout_width="match_parent"
+@@ -32,4 +29,7 @@
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             />
++    <com.gersion.stepview.view.SleepView
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"/>
+ </LinearLayout>
+Index: app/src/main/java/com/gersion/stepview/view/StepView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/gersion/stepview/view/StepView.java	(revision 9bfff5044d767821ec40912c03d653f7a9c09566)
++++ app/src/main/java/com/gersion/stepview/view/StepView.java	(revision )
+@@ -1,10 +1,15 @@
+ package com.gersion.stepview.view;
+ 
++import android.animation.Animator;
++import android.animation.AnimatorListenerAdapter;
++import android.animation.ValueAnimator;
+ import android.content.Context;
+ import android.graphics.Canvas;
+ import android.graphics.Color;
+ import android.graphics.Paint;
++import android.graphics.Rect;
+ import android.graphics.RectF;
++import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+ import android.util.AttributeSet;
+ import android.util.Log;
+ import android.view.View;
+@@ -24,6 +29,8 @@
+  */
+ public class StepView extends View {
+ 
++    boolean isRealy = false;
++    boolean isLoadingResult = false;
+     private Paint mBlackTextPaint;
+     private Paint mPaint;
+     private int mCenterX;
+@@ -31,7 +38,7 @@
+     private int mRadius;
+     private Paint mDotPaint;
+     private Paint mArcPaint;
+-    private float mDegree;
++    private float mDegree = 0;
+     private int mMaxProgress;
+     private int mProgress;
+     private Paint mTextPaint;
+@@ -42,6 +49,10 @@
+     private int mSmallTextSize;
+     private int mDotSize;
+     private int mColor;
++    private ValueAnimator secondAnim;
++    private float rotateSecondPointer;
++    private ValueAnimator resultAnim;
++    private float rotateDegree;
+ 
+     public StepView(Context context) {
+         this(context, null);
+@@ -49,12 +60,7 @@
+ 
+     public StepView(Context context, AttributeSet attrs) {
+         super(context, attrs);
+-        mStrokeWidth = dip2px(context,1);
+-        mLineDistance = dip2px(context,10);
+-        mBigTextSize = dip2px(context,50);
+-        mSmallTextSize = dip2px(context,15);
+-        mDotSize = dip2px(context,5);
+-        mColor = Color.parseColor("#ffffff");
++        initData(context);
+         //初始化线条画笔
+         initPaint();
+ 
+@@ -69,8 +75,19 @@
+ 
+         //初始化卡路里文字画笔
+         initBlackTextPaint();
++        startLoading();
++
+     }
+ 
++    private void initData(Context context) {
++        mStrokeWidth = dip2px(context, 1);
++        mLineDistance = dip2px(context, 10);
++        mBigTextSize = dip2px(context, 50);
++        mSmallTextSize = dip2px(context, 15);
++        mDotSize = dip2px(context, 5);
++        mColor = Color.parseColor("#ffffff");
++    }
++
+     private void initPaint() {
+         mPaint = new Paint();
+         mPaint.setAntiAlias(true);
+@@ -78,7 +95,7 @@
+         mPaint.setStyle(Paint.Style.STROKE);
+         mPaint.setStrokeWidth(mStrokeWidth);
+         mPaint.setFilterBitmap(true);
+-        mPaint.setAlpha(90);
++        mPaint.setAlpha(120);
+     }
+ 
+     private void initDotPaint() {
+@@ -109,16 +126,14 @@
+         mBlackTextPaint.setTextAlign(Paint.Align.CENTER);
+         mBlackTextPaint.setTextSize(mSmallTextSize);
+         mBlackTextPaint.setColor(Color.WHITE);
+-        mBlackTextPaint.setAlpha(90);
++        mBlackTextPaint.setAlpha(150);
+     }
+ 
+-
+     @Override
+     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+         int width = MeasureSpec.getSize(widthMeasureSpec);
+-        int height = MeasureSpec.getSize(heightMeasureSpec)/2;
++        int height = MeasureSpec.getSize(heightMeasureSpec) / 2;
+-        int measureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+-        setMeasuredDimension(width,height);
++        setMeasuredDimension(width, height);
+     }
+ 
+     @Override
+@@ -129,34 +144,41 @@
+ 
+         int startX = mCenterX;
+         int startY = mCenterY - mRadius - mLineDistance;
+-
+-        //绘制小白点
+-        canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
+         //绘制最外层的圆环
+         canvas.drawCircle(mCenterX, mCenterY, mRadius + mLineDistance, mPaint);
+         //绘制最中间的圆环
+-        canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
+-        //绘制刻度
+-        drawnLine(canvas);
++//        canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
++
+         //绘制最里层的圆环
+-        canvas.drawCircle(mCenterX, mCenterY, mRadius - mLineDistance - mStrokeWidth, mPaint);
++//        canvas.drawCircle(mCenterX, mCenterY, mRadius - mLineDistance - mStrokeWidth, mPaint);
+ 
+-        //绘制进度
+-        drawProgress(canvas);
+-
+         //绘制中间的文字
+         String stepText = mProgress + "";
+-        canvas.drawText(stepText, mCenterX, mCenterY, mTextPaint);
++//        Log.d("aa",stepText);
++        float bottom = getBottomPoint(mTextPaint);
++        canvas.drawText(stepText, mCenterX, mCenterY + bottom, mTextPaint);
+ 
+         //绘制中间的文字
+         String textStep = "步";
+         float start = getTextWidth(mTextPaint, stepText);
+-        canvas.drawText(textStep, mCenterX + start + mLineDistance, mCenterY, mBlackTextPaint);
++        canvas.drawText(textStep, mCenterX + start + mDotSize * 2, mCenterY + bottom, mBlackTextPaint);
+ 
+         mDistance = getStepDistance(mProgress);
+-        float bottom = getBottomPoint(mTextPaint);
+-        canvas.drawText(mDistance, mCenterX, mCenterY + bottom + mLineDistance, mBlackTextPaint);
++
++        canvas.drawText(mDistance, mCenterX, mCenterY + bottom + mLineDistance * 2, mBlackTextPaint);
++        if (isRealy) {
++            //绘制刻度
++            drawnLine(canvas);
++            //绘制进度
++            drawProgress(canvas);
++            canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
++
++        } else {
++            //绘制小白点
++            canvas.rotate(rotateSecondPointer, mCenterX, mCenterY);
++            canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
+-    }
++        }
++    }
+ 
+     //获取字符的高度
+     private float getBottomPoint(Paint paint) {
+@@ -165,27 +187,27 @@
+     }
+ 
+     //计算行走的里程及消耗的卡路里
+-    private String getStepDistance(int progress){
++    private String getStepDistance(int progress) {
+         float distance = progress / 1420f;
+         DecimalFormat decimalFormat = new DecimalFormat("0.0");
+         String format = decimalFormat.format(distance);
+         int carol = (int) (distance * 32.3f);
+-        return format+"公里 | "+carol+"千卡";
++        return format + "公里 | " + carol + "千卡";
+     }
+ 
+     //获取字符相对中心向右偏移的量
+     private float getTextWidth(Paint paint, String text) {
+-        return paint.measureText(text, 0, text.length())/2;
++        return paint.measureText(text, 0, text.length()) / 2;
+     }
+ 
+     private void drawProgress(Canvas canvas) {
+-        int offest = mLineDistance / 2+mStrokeWidth/2;
++        int offest = mLineDistance / 2 + mStrokeWidth / 2;
+         RectF oval = new RectF();
+-        oval.left = mCenterX - mRadius + offest;                              //左边
+-        oval.top = mCenterY - mRadius + offest;                                   //上边
+-        oval.right = mCenterX + mRadius - offest;                             //右边
+-        oval.bottom = mCenterY + mRadius - offest;                                //下边
+-        canvas.drawArc(oval, -90, mDegree, false, mArcPaint);
++        oval.left = mCenterX - mRadius + offest;
++        oval.top = mCenterY - mRadius + offest;
++        oval.right = mCenterX + mRadius - offest;
++        oval.bottom = mCenterY + mRadius - offest;
++        canvas.drawArc(oval, -90,isLoadingResult?mDegree:rotateDegree , false, mArcPaint);
+     }
+ 
+     /**
+@@ -194,7 +216,7 @@
+     private void drawnLine(Canvas canvas) {
+         for (int i = 0; i < 360; i++) {
+             int startX = mCenterX;
+-            int startY = mCenterY - mRadius+mStrokeWidth/2;
++            int startY = mCenterY - mRadius + mStrokeWidth / 2;
+             int stopX = mCenterX;
+             int stopY = startY + mLineDistance;
+             canvas.drawLine(startX, startY, stopX, stopY, mPaint);
+@@ -203,16 +225,98 @@
+         }
+     }
+ 
++    //目标完成进度动画
++    private void resultLoading() {
++        final float startDegree = 0f;
++        float endDegree = getDegree(mProgress);
++        resultAnim = ValueAnimator.ofFloat(startDegree,endDegree);
++        resultAnim.setDuration(1000);
++        resultAnim.setInterpolator(new LinearOutSlowInInterpolator());
++        resultAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
++
++            @Override
++            public void onAnimationUpdate(ValueAnimator animation) {
++                float newValue = (float) animation.getAnimatedValue();
++                rotateDegree = newValue;
++                invalidate();
++            }
++        });
++        resultAnim.addListener(new AnimatorListenerAdapter() {
++            @Override
++            public void onAnimationEnd(Animator animation) {
++                isLoadingResult = true;
++            }
++        });
++        resultAnim.start();
++    }
++
++    //加载手环数据动画
++    private void startLoading() {
++        final float startDegree = 0f;
++        final float endDegree = 360f;
++        secondAnim = ValueAnimator.ofFloat(startDegree, endDegree);
++        secondAnim.setDuration(1000);
++        secondAnim.setInterpolator(new LinearOutSlowInInterpolator());
++        secondAnim.setRepeatMode(ValueAnimator.RESTART);
++        secondAnim.setRepeatCount(ValueAnimator.INFINITE);
++        secondAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
++
++            private float lastDrawValue = 0;
++            private float drawInterval = 0.1f;
++
++            private float lastUpdatePointerValue = 0;
++            private float updatePointerInterval = 360 / 60 * 5;
++
++            @Override
++            public void onAnimationUpdate(ValueAnimator animation) {
++                float newValue = (float) animation.getAnimatedValue();
++
++                // Check if it is the time to update pointer position
++                float increasedPointerValue = newValue - lastUpdatePointerValue;
++                if (increasedPointerValue < 0) {
++                    increasedPointerValue = endDegree + increasedPointerValue;
++                }
++                if (increasedPointerValue >= updatePointerInterval) {
++                    lastUpdatePointerValue = newValue;
++//                    updateTimePointer();
++                }
++
++                // Check if it is the time to invalidate
++                float increasedDrawValue = newValue - lastDrawValue;
++                if (increasedDrawValue < 0) {
++                    increasedDrawValue = endDegree + increasedDrawValue;
++                }
++                if (increasedDrawValue >= drawInterval) {
++                    lastDrawValue = newValue;
++                    rotateSecondPointer += increasedDrawValue;
++                    Log.d("aa",rotateSecondPointer+"");
++                    invalidate();
++                }
++            }
++        });
++        secondAnim.start();
++    }
++
+     private int dip2px(Context context, float dpValue) {
+         final float scale = context.getResources().getDisplayMetrics().density;
+         return (int) (dpValue * scale + 0.5f);
+     }
+ 
+     public void setProgress(int progress) {
++        getDegree(progress);
++        invalidate();
++    }
++
++    private void setProgress(float progress){
++        mDegree = progress;
++        invalidate();
++    }
++
++    private float getDegree(int progress) {
+         mProgress = progress;
+         float precent = mProgress / (mMaxProgress + 0f);
+         mDegree = 360 * precent;
+-        invalidate();
++        return mDegree;
+     }
+ 
+     public void setMaxProgress(int max) {
+@@ -221,38 +325,74 @@
+         invalidate();
+     }
+ 
+-    public void setLineDistance(int distance){
++    public void setLineDistance(int distance) {
+         mLineDistance = distance;
++        initArcPaint();
+         invalidate();
+     }
+ 
+-    public void setStrokeWidth(int strokeWidth){
++    public void setStrokeWidth(int strokeWidth) {
+         mStrokeWidth = strokeWidth;
++        initArcPaint();
++        initPaint();
+         invalidate();
+     }
+ 
+-    public void setBigTextSize(int size){
++    public void setBigTextSize(int size) {
+         mBigTextSize = size;
+         initTextPaint();
+         invalidate();
+     }
+ 
+-    public void setSmallTextSize(int size){
++    public void setSmallTextSize(int size) {
+         mSmallTextSize = size;
+         initBlackTextPaint();
+         invalidate();
+     }
+ 
+-    public void setDotSize(int dotSize){
++    public void setDotSize(int dotSize) {
+         mDotSize = dotSize;
+         invalidate();
+     }
+ 
++    public void stopAnimator(int progress) {
++        mProgress = progress;
++        secondAnim.cancel();
++        isRealy = true;
++        invalidate();
++        resultLoading();
++    }
++
+-    public void setColor(int color){
++    public void setColor(int color) {
+         mColor = color;
+         initPaint();
+         initDotPaint();
+         initArcPaint();
+         invalidate();
++    }
++
++    @Override
++    protected void onDetachedFromWindow() {
++        super.onDetachedFromWindow();
++
++    }
++
++    @Override
++    protected void onWindowVisibilityChanged(int visibility) {
++//        super.onWindowVisibilityChanged(visibility);
++        if (visibility == INVISIBLE){
++            Log.d("aa",visibility+"adsfasdfasdfasdf");
++            resultAnim.cancel();
++            secondAnim.cancel();
++        }
++    }
++
++    @Override
++    protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
++        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
++        if (!gainFocus){
++            resultAnim.cancel();
++            secondAnim.cancel();
++        }
+     }
+ }
