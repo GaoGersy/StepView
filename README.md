@@ -13,3 +13,5 @@ setDotSize(10);//设置小圆点的大小
 ```
 
 上面的方法调用后，界面都会重新绘制
+
+ ![GIF](C:\Users\Gersy\Desktop\GIF.gif)
