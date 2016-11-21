@@ -1,10 +1,15 @@
 package com.gersion.stepview.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +29,8 @@ import java.text.DecimalFormat;
  */
 public class StepView extends View {
 
+    boolean isRealy = false;
+    boolean isLoadingResult = false;
     private Paint mBlackTextPaint;
     private Paint mPaint;
     private int mCenterX;
@@ -31,7 +38,7 @@ public class StepView extends View {
     private int mRadius;
     private Paint mDotPaint;
     private Paint mArcPaint;
-    private float mDegree;
+    private float mDegree = 0;
     private int mMaxProgress;
     private int mProgress;
     private Paint mTextPaint;
@@ -42,6 +49,10 @@ public class StepView extends View {
     private int mSmallTextSize;
     private int mDotSize;
     private int mColor;
+    private ValueAnimator secondAnim;
+    private float rotateSecondPointer;
+    private ValueAnimator resultAnim;
+    private float rotateDegree;
 
     public StepView(Context context) {
         this(context, null);
@@ -49,12 +60,7 @@ public class StepView extends View {
 
     public StepView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mStrokeWidth = dip2px(context,1);
-        mLineDistance = dip2px(context,10);
-        mBigTextSize = dip2px(context,50);
-        mSmallTextSize = dip2px(context,15);
-        mDotSize = dip2px(context,5);
-        mColor = Color.parseColor("#ffffff");
+        initData(context);
         //初始化线条画笔
         initPaint();
 
@@ -69,6 +75,17 @@ public class StepView extends View {
 
         //初始化卡路里文字画笔
         initBlackTextPaint();
+        startLoading();
+
+    }
+
+    private void initData(Context context) {
+        mStrokeWidth = dip2px(context, 1);
+        mLineDistance = dip2px(context, 10);
+        mBigTextSize = dip2px(context, 50);
+        mSmallTextSize = dip2px(context, 15);
+        mDotSize = dip2px(context, 5);
+        mColor = Color.parseColor("#ffffff");
     }
 
     private void initPaint() {
@@ -78,7 +95,7 @@ public class StepView extends View {
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setFilterBitmap(true);
-        mPaint.setAlpha(90);
+        mPaint.setAlpha(120);
     }
 
     private void initDotPaint() {
@@ -109,16 +126,14 @@ public class StepView extends View {
         mBlackTextPaint.setTextAlign(Paint.Align.CENTER);
         mBlackTextPaint.setTextSize(mSmallTextSize);
         mBlackTextPaint.setColor(Color.WHITE);
-        mBlackTextPaint.setAlpha(90);
+        mBlackTextPaint.setAlpha(150);
     }
-
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec)/2;
-        int measureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-        setMeasuredDimension(width,height);
+        int height = MeasureSpec.getSize(heightMeasureSpec) / 2;
+        setMeasuredDimension(width, height);
     }
 
     @Override
@@ -129,33 +144,40 @@ public class StepView extends View {
 
         int startX = mCenterX;
         int startY = mCenterY - mRadius - mLineDistance;
-
-        //绘制小白点
-        canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
         //绘制最外层的圆环
         canvas.drawCircle(mCenterX, mCenterY, mRadius + mLineDistance, mPaint);
         //绘制最中间的圆环
-        canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
-        //绘制刻度
-        drawnLine(canvas);
-        //绘制最里层的圆环
-        canvas.drawCircle(mCenterX, mCenterY, mRadius - mLineDistance - mStrokeWidth, mPaint);
+//        canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
 
-        //绘制进度
-        drawProgress(canvas);
+        //绘制最里层的圆环
+//        canvas.drawCircle(mCenterX, mCenterY, mRadius - mLineDistance - mStrokeWidth, mPaint);
 
         //绘制中间的文字
         String stepText = mProgress + "";
-        canvas.drawText(stepText, mCenterX, mCenterY, mTextPaint);
+//        Log.d("aa",stepText);
+        float bottom = getBottomPoint(mTextPaint);
+        canvas.drawText(stepText, mCenterX, mCenterY + bottom, mTextPaint);
 
         //绘制中间的文字
         String textStep = "步";
         float start = getTextWidth(mTextPaint, stepText);
-        canvas.drawText(textStep, mCenterX + start + mLineDistance, mCenterY, mBlackTextPaint);
+        canvas.drawText(textStep, mCenterX + start + mDotSize * 2, mCenterY + bottom, mBlackTextPaint);
 
         mDistance = getStepDistance(mProgress);
-        float bottom = getBottomPoint(mTextPaint);
-        canvas.drawText(mDistance, mCenterX, mCenterY + bottom + mLineDistance, mBlackTextPaint);
+
+        canvas.drawText(mDistance, mCenterX, mCenterY + bottom + mLineDistance * 2, mBlackTextPaint);
+        if (isRealy) {
+            //绘制刻度
+            drawnLine(canvas);
+            //绘制进度
+            drawProgress(canvas);
+            canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
+
+        } else {
+            //绘制小白点
+            canvas.rotate(rotateSecondPointer, mCenterX, mCenterY);
+            canvas.drawCircle(startX, startY, mDotSize, mDotPaint);
+        }
     }
 
     //获取字符的高度
@@ -165,27 +187,27 @@ public class StepView extends View {
     }
 
     //计算行走的里程及消耗的卡路里
-    private String getStepDistance(int progress){
+    private String getStepDistance(int progress) {
         float distance = progress / 1420f;
         DecimalFormat decimalFormat = new DecimalFormat("0.0");
         String format = decimalFormat.format(distance);
         int carol = (int) (distance * 32.3f);
-        return format+"公里 | "+carol+"千卡";
+        return format + "公里 | " + carol + "千卡";
     }
 
     //获取字符相对中心向右偏移的量
     private float getTextWidth(Paint paint, String text) {
-        return paint.measureText(text, 0, text.length())/2;
+        return paint.measureText(text, 0, text.length()) / 2;
     }
 
     private void drawProgress(Canvas canvas) {
-        int offest = mLineDistance / 2+mStrokeWidth/2;
+        int offest = mLineDistance / 2 + mStrokeWidth / 2;
         RectF oval = new RectF();
-        oval.left = mCenterX - mRadius + offest;                              //左边
-        oval.top = mCenterY - mRadius + offest;                                   //上边
-        oval.right = mCenterX + mRadius - offest;                             //右边
-        oval.bottom = mCenterY + mRadius - offest;                                //下边
-        canvas.drawArc(oval, -90, mDegree, false, mArcPaint);
+        oval.left = mCenterX - mRadius + offest;
+        oval.top = mCenterY - mRadius + offest;
+        oval.right = mCenterX + mRadius - offest;
+        oval.bottom = mCenterY + mRadius - offest;
+        canvas.drawArc(oval, -90,isLoadingResult?mDegree:rotateDegree , false, mArcPaint);
     }
 
     /**
@@ -194,7 +216,7 @@ public class StepView extends View {
     private void drawnLine(Canvas canvas) {
         for (int i = 0; i < 360; i++) {
             int startX = mCenterX;
-            int startY = mCenterY - mRadius+mStrokeWidth/2;
+            int startY = mCenterY - mRadius + mStrokeWidth / 2;
             int stopX = mCenterX;
             int stopY = startY + mLineDistance;
             canvas.drawLine(startX, startY, stopX, stopY, mPaint);
@@ -203,16 +225,98 @@ public class StepView extends View {
         }
     }
 
+    //目标完成进度动画
+    private void resultLoading() {
+        final float startDegree = 0f;
+        float endDegree = getDegree(mProgress);
+        resultAnim = ValueAnimator.ofFloat(startDegree,endDegree);
+        resultAnim.setDuration(1000);
+        resultAnim.setInterpolator(new LinearOutSlowInInterpolator());
+        resultAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float newValue = (float) animation.getAnimatedValue();
+                rotateDegree = newValue;
+                invalidate();
+            }
+        });
+        resultAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isLoadingResult = true;
+            }
+        });
+        resultAnim.start();
+    }
+
+    //加载手环数据动画
+    private void startLoading() {
+        final float startDegree = 0f;
+        final float endDegree = 360f;
+        secondAnim = ValueAnimator.ofFloat(startDegree, endDegree);
+        secondAnim.setDuration(1000);
+        secondAnim.setInterpolator(new LinearOutSlowInInterpolator());
+        secondAnim.setRepeatMode(ValueAnimator.RESTART);
+        secondAnim.setRepeatCount(ValueAnimator.INFINITE);
+        secondAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            private float lastDrawValue = 0;
+            private float drawInterval = 0.1f;
+
+            private float lastUpdatePointerValue = 0;
+            private float updatePointerInterval = 360 / 60 * 5;
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float newValue = (float) animation.getAnimatedValue();
+
+                // Check if it is the time to update pointer position
+                float increasedPointerValue = newValue - lastUpdatePointerValue;
+                if (increasedPointerValue < 0) {
+                    increasedPointerValue = endDegree + increasedPointerValue;
+                }
+                if (increasedPointerValue >= updatePointerInterval) {
+                    lastUpdatePointerValue = newValue;
+//                    updateTimePointer();
+                }
+
+                // Check if it is the time to invalidate
+                float increasedDrawValue = newValue - lastDrawValue;
+                if (increasedDrawValue < 0) {
+                    increasedDrawValue = endDegree + increasedDrawValue;
+                }
+                if (increasedDrawValue >= drawInterval) {
+                    lastDrawValue = newValue;
+                    rotateSecondPointer += increasedDrawValue;
+                    Log.d("aa",rotateSecondPointer+"");
+                    invalidate();
+                }
+            }
+        });
+        secondAnim.start();
+    }
+
     private int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }
 
     public void setProgress(int progress) {
+        getDegree(progress);
+        invalidate();
+    }
+
+    private void setProgress(float progress){
+        mDegree = progress;
+        invalidate();
+    }
+
+    private float getDegree(int progress) {
         mProgress = progress;
         float precent = mProgress / (mMaxProgress + 0f);
         mDegree = 360 * precent;
-        invalidate();
+        return mDegree;
     }
 
     public void setMaxProgress(int max) {
@@ -221,38 +325,74 @@ public class StepView extends View {
         invalidate();
     }
 
-    public void setLineDistance(int distance){
+    public void setLineDistance(int distance) {
         mLineDistance = distance;
+        initArcPaint();
         invalidate();
     }
 
-    public void setStrokeWidth(int strokeWidth){
+    public void setStrokeWidth(int strokeWidth) {
         mStrokeWidth = strokeWidth;
+        initArcPaint();
+        initPaint();
         invalidate();
     }
 
-    public void setBigTextSize(int size){
+    public void setBigTextSize(int size) {
         mBigTextSize = size;
         initTextPaint();
         invalidate();
     }
 
-    public void setSmallTextSize(int size){
+    public void setSmallTextSize(int size) {
         mSmallTextSize = size;
         initBlackTextPaint();
         invalidate();
     }
 
-    public void setDotSize(int dotSize){
+    public void setDotSize(int dotSize) {
         mDotSize = dotSize;
         invalidate();
     }
 
-    public void setColor(int color){
+    public void stopAnimator(int progress) {
+        mProgress = progress;
+        secondAnim.cancel();
+        isRealy = true;
+        invalidate();
+        resultLoading();
+    }
+
+    public void setColor(int color) {
         mColor = color;
         initPaint();
         initDotPaint();
         initArcPaint();
         invalidate();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+//        super.onWindowVisibilityChanged(visibility);
+        if (visibility == INVISIBLE){
+            Log.d("aa",visibility+"adsfasdfasdfasdf");
+            resultAnim.cancel();
+            secondAnim.cancel();
+        }
+    }
+
+    @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        if (!gainFocus){
+            resultAnim.cancel();
+            secondAnim.cancel();
+        }
     }
 }
